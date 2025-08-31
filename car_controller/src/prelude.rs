@@ -1,6 +1,4 @@
 pub use crate::{
-    CarControllerPlugin,
-    debug::CarControllerDebugPlugin,
-    vertical_suspension::{Suspension, VerticalSuspension},
+    CarControllerPlugin, debug::CarControllerDebugPlugin, vertical_suspension::VerticalSuspension,
     wheel::CarWheel,
 };

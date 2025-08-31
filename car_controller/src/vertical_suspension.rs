@@ -6,20 +6,9 @@ pub struct VerticalSuspensionPlugin;
 impl Plugin for VerticalSuspensionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PostUpdate, on_suspension_added);
-        app.add_systems(FixedUpdate, (handle_vertical_suspension,));
+        app.add_systems(FixedUpdate, handle_vertical_suspension);
     }
 }
-
-#[derive(Component)]
-#[relationship(relationship_target = AttachedSuspensions)]
-pub struct Suspension(pub Entity);
-
-/// This is the "relationship target" component.
-/// It will be automatically inserted and updated to contain
-/// all entities that currently "like" this entity.
-#[derive(Component, Deref)]
-#[relationship_target(relationship = Suspension)]
-pub struct AttachedSuspensions(Vec<Entity>);
 
 #[derive(Component)]
 pub struct VerticalSuspension {
@@ -39,7 +28,10 @@ impl VerticalSuspension {
 }
 
 fn on_suspension_added(
-    mut suspension: Query<(&Transform, &mut VerticalSuspension, &Suspension), Added<Suspension>>,
+    mut suspension: Query<
+        (&Transform, &mut VerticalSuspension, &ChildOf),
+        Added<VerticalSuspension>,
+    >,
     transforms: Query<&Transform>,
 ) {
     for (transform, mut vertical_suspension, suspension) in suspension.iter_mut() {
@@ -50,12 +42,7 @@ fn on_suspension_added(
 
 fn handle_vertical_suspension(
     mut commands: Commands,
-    vertical_suspensions: Query<(
-        &GlobalTransform,
-        &Transform,
-        &VerticalSuspension,
-        &Suspension,
-    )>,
+    vertical_suspensions: Query<(&GlobalTransform, &Transform, &VerticalSuspension, &ChildOf)>,
     mut parent: Query<(
         &Transform,
         &LinearVelocity,
@@ -68,28 +55,34 @@ fn handle_vertical_suspension(
     {
         let (parent_transform, linear_velocity, angular_velocity, external_force) =
             parent.get_mut(suspension.0).unwrap();
-        let diff = parent_transform.translation.y - transform.translation.y;
+        let diff = distance_along_down(parent_transform, transform);
         let offset = vertical_suspension.diff - diff;
         let velocity =
             get_point_velocity(linear_velocity.0, angular_velocity.0, transform.translation);
-        let force = (Vec3::Y * offset * vertical_suspension.stiffness)
+        let force = (global_transform.up() * offset * vertical_suspension.stiffness)
             - (velocity * vertical_suspension.damping_ratio);
 
         if let Some(mut external_force) = external_force {
             external_force.apply_force_at_point(
-                Vec3::Y * force,
+                force,
                 global_transform.translation(),
-                Vec3::ZERO,
+                parent_transform.translation,
             );
             external_force.persistent = false;
         } else {
             commands
                 .entity(suspension.0)
-                .insert(ExternalForce::new(Vec3::Y * force).with_persistence(false));
+                .insert(ExternalForce::new(force).with_persistence(false));
         }
     }
 }
 
 fn get_point_velocity(linear_velocity: Vec3, angular_velocity: Vec3, point: Vec3) -> Vec3 {
     linear_velocity + angular_velocity.cross(point)
+}
+
+fn distance_along_down(object_a: &Transform, object_b: &Transform) -> f32 {
+    let world_axis = object_a.rotation * object_a.down();
+    let delta = object_b.translation - object_a.translation;
+    delta.dot(world_axis.normalize())
 }
