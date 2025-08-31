@@ -1,0 +1,8 @@
+[package]
+name = "car_controller"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = "0.16"
+avian3d = "0.3"
