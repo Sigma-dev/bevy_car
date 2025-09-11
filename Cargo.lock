@@ -1553,6 +1553,7 @@ version = "0.1.0"
 dependencies = [
  "avian3d",
  "bevy",
+ "force_accumulator",
 ]
 
 [[package]]
@@ -2133,6 +2134,14 @@ dependencies = [
  "slotmap",
  "tinyvec",
  "ttf-parser 0.20.0",
+]
+
+[[package]]
+name = "force_accumulator"
+version = "0.1.0"
+dependencies = [
+ "avian3d",
+ "bevy",
 ]
 
 [[package]]

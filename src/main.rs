@@ -31,7 +31,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Camera3d::default(),
         NumpadCamera::new(KeyCode::Numpad4),
-        Transform::from_xyz(0.0, 1.0, -10.0).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(0.0, 50.0, 0.0).looking_at(Vec3::ZERO, -Vec3::Z),
     ));
     commands.spawn((
         SceneRoot(
@@ -48,8 +48,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             SceneRoot(
                 asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/cars/test_car.glb")),
             ),
+            CarController,
             RigidBody::Dynamic,
             ColliderConstructorHierarchy::new(ColliderConstructor::TrimeshFromMesh),
+            CenterOfMass::ZERO,
             Transform::from_xyz(0.0, 1.5, 0.0),
             Visibility::Inherited,
             children![
@@ -77,12 +79,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         let front = i / 2 == 0;
         commands.spawn((
             ChildOf(car),
-            CarWheel::new(10.0),
-            VerticalSuspension::new(30.0, 5.),
+            Mass(1.),
+            CarWheel::new(if front { 0.6 } else { 0.0 }, 1., 0., front),
+            VerticalSuspension::new(2., 0.5, 1.),
             Transform::from_xyz(
                 if right { 0.75 } else { -0.75 },
-                -0.2,
-                if front { 1.5 } else { -1.5 },
+                0.1,
+                if front { -1.5 } else { 1.5 },
             ),
         ));
     }

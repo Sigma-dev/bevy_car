@@ -1,5 +1,6 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
+use force_accumulator::prelude::*;
 
 pub struct VerticalSuspensionPlugin;
 
@@ -14,75 +15,66 @@ impl Plugin for VerticalSuspensionPlugin {
 pub struct VerticalSuspension {
     pub stiffness: f32,
     pub damping_ratio: f32,
-    diff: f32,
+    pub travel_distance: f32,
 }
 
 impl VerticalSuspension {
-    pub fn new(stiffness: f32, damping_ratio: f32) -> Self {
+    pub fn new(stiffness: f32, damping_ratio: f32, travel_distance: f32) -> Self {
         Self {
             stiffness,
             damping_ratio,
-            diff: 0.0,
+            travel_distance,
         }
     }
 }
 
 fn on_suspension_added(
-    mut suspension: Query<
-        (&Transform, &mut VerticalSuspension, &ChildOf),
-        Added<VerticalSuspension>,
-    >,
-    transforms: Query<&Transform>,
+    mut commands: Commands,
+    suspension: Query<(Entity, &VerticalSuspension), Added<VerticalSuspension>>,
 ) {
-    for (transform, mut vertical_suspension, suspension) in suspension.iter_mut() {
-        let parent_transform = transforms.get(suspension.0).unwrap();
-        vertical_suspension.diff = parent_transform.translation.y - transform.translation.y;
+    for (entity, vertical_suspension) in suspension.iter() {
+        commands
+            .entity(entity)
+            .insert((RayCaster::new(Vec3::ZERO, Dir3::NEG_Y)
+                .with_max_distance(vertical_suspension.travel_distance),));
     }
 }
 
 fn handle_vertical_suspension(
-    mut commands: Commands,
-    vertical_suspensions: Query<(&GlobalTransform, &Transform, &VerticalSuspension, &ChildOf)>,
+    vertical_suspensions: Query<(&GlobalTransform, &VerticalSuspension, &ChildOf, &RayHits)>,
     mut parent: Query<(
-        &Transform,
+        &GlobalTransform,
         &LinearVelocity,
         &AngularVelocity,
-        Option<&mut ExternalForce>,
+        &mut ForceAccumulator,
     )>,
 ) {
-    for (global_transform, transform, vertical_suspension, suspension) in
-        vertical_suspensions.iter()
-    {
-        let (parent_transform, linear_velocity, angular_velocity, external_force) =
+    for (global_transform, vertical_suspension, suspension, hits) in vertical_suspensions.iter() {
+        let Some(hit_distance) = hits.iter().next().map(|h| h.distance) else {
+            continue;
+        };
+        let (parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator) =
             parent.get_mut(suspension.0).unwrap();
-        let diff = distance_along_down(parent_transform, transform);
-        let offset = vertical_suspension.diff - diff;
-        let velocity =
-            get_point_velocity(linear_velocity.0, angular_velocity.0, transform.translation);
-        let force = (global_transform.up() * offset * vertical_suspension.stiffness)
-            - (velocity * vertical_suspension.damping_ratio);
+        let offset = vertical_suspension.travel_distance - hit_distance;
 
-        if let Some(mut external_force) = external_force {
-            external_force.apply_force_at_point(
-                force,
-                global_transform.translation(),
-                parent_transform.translation,
-            );
-            external_force.persistent = false;
-        } else {
-            commands
-                .entity(suspension.0)
-                .insert(ExternalForce::new(force).with_persistence(false));
-        }
+        let velocity = get_point_velocity(
+            linear_velocity.0,
+            angular_velocity.0,
+            global_transform.translation() - parent_global_transform.translation(),
+        );
+        let y_velocity = velocity.dot(*global_transform.up()) * global_transform.up();
+        let force = (global_transform.up() * offset * vertical_suspension.stiffness)
+            - (y_velocity * vertical_suspension.damping_ratio);
+
+        force_accumulator.apply_impulse_debug(
+            force,
+            global_transform.translation(),
+            parent_global_transform.translation(),
+            Color::srgb(0.0, 1.0, 0.0),
+        );
     }
 }
 
 fn get_point_velocity(linear_velocity: Vec3, angular_velocity: Vec3, point: Vec3) -> Vec3 {
     linear_velocity + angular_velocity.cross(point)
-}
-
-fn distance_along_down(object_a: &Transform, object_b: &Transform) -> f32 {
-    let world_axis = object_a.rotation * object_a.down();
-    let delta = object_b.translation - object_a.translation;
-    delta.dot(world_axis.normalize())
 }
