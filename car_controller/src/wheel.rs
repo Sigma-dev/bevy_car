@@ -98,16 +98,16 @@ fn handle_power(
         if wheel.power == 0.0 {
             continue;
         }
+        gizmos.arrow(
+            global_transform.translation(),
+            global_transform.translation() + *global_transform.forward() * 10.,
+            Color::srgb(1.00, 0.32, 0.00),
+        );
         let input = if keyboard.pressed(KeyCode::KeyW) {
             1.0
         } else if keyboard.pressed(KeyCode::KeyS) {
             -1.0
         } else {
-            gizmos.arrow(
-                global_transform.translation(),
-                global_transform.translation() + *global_transform.forward() * 10.,
-                Color::srgb(1.00, 0.32, 0.00),
-            );
             continue;
         };
 

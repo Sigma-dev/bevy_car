@@ -46,7 +46,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let car = commands
         .spawn((
             SceneRoot(
-                asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/cars/test_car.glb")),
+                asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/cars/truck.glb")),
             ),
             CarController,
             RigidBody::Dynamic,
@@ -80,12 +80,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands.spawn((
             ChildOf(car),
             Mass(1.),
-            CarWheel::new(if front { 0.6 } else { 0.0 }, 1., 0., front),
-            VerticalSuspension::new(2., 0.5, 1.),
+            CarWheel::new(if front { 0.6 } else { 0.0 }, 0.2, 0., front),
+            VerticalSuspension::new(3., 0.5, 1.),
             Transform::from_xyz(
-                if right { 0.75 } else { -0.75 },
+                if right { 1. } else { -1. } * 0.75,
                 0.1,
-                if front { -1.5 } else { 1.5 },
+                if front { -1. } else { 1. } * 1.7,
             ),
         ));
     }
