@@ -2,6 +2,9 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use force_accumulator::ForceAccumulator;
 
+use crate::wheels::visuals::CarWheelVisualsPlugin;
+
+pub mod visuals;
 pub struct CarWheelPlugin;
 
 impl Plugin for CarWheelPlugin {
@@ -14,7 +17,8 @@ impl Plugin for CarWheelPlugin {
                 handle_traction,
                 handle_rolling_resistance,
             ),
-        );
+        )
+        .add_plugins(CarWheelVisualsPlugin);
     }
 }
 

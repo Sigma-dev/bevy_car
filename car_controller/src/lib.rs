@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use force_accumulator::prelude::*;
 
-use crate::{vertical_suspension::VerticalSuspensionPlugin, wheel::CarWheelPlugin};
+use crate::{vertical_suspension::VerticalSuspensionPlugin, wheels::CarWheelPlugin};
 
 pub mod debug;
 pub mod prelude;
 mod vertical_suspension;
-mod wheel;
+mod wheels;
 pub struct CarControllerPlugin;
 
 impl Plugin for CarControllerPlugin {

@@ -1,7 +1,7 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::wheel::CarWheel;
+use crate::wheels::CarWheel;
 
 pub struct CarControllerDebugPlugin;
 

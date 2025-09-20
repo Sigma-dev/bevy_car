@@ -18,6 +18,9 @@ pub struct VerticalSuspension {
     pub travel_distance: f32,
 }
 
+#[derive(Component)]
+pub struct VerticalSuspensionCurrentLength(pub f32);
+
 impl VerticalSuspension {
     pub fn new(stiffness: f32, damping_ratio: f32, travel_distance: f32) -> Self {
         Self {
@@ -41,7 +44,14 @@ fn on_suspension_added(
 }
 
 fn handle_vertical_suspension(
-    vertical_suspensions: Query<(&GlobalTransform, &VerticalSuspension, &ChildOf, &RayHits)>,
+    mut commands: Commands,
+    vertical_suspensions: Query<(
+        Entity,
+        &GlobalTransform,
+        &VerticalSuspension,
+        &ChildOf,
+        &RayHits,
+    )>,
     mut parent: Query<(
         &GlobalTransform,
         &LinearVelocity,
@@ -49,12 +59,17 @@ fn handle_vertical_suspension(
         &mut ForceAccumulator,
     )>,
 ) {
-    for (global_transform, vertical_suspension, suspension, hits) in vertical_suspensions.iter() {
+    for (entity, global_transform, vertical_suspension, child_of, hits) in
+        vertical_suspensions.iter()
+    {
         let Some(hit_distance) = hits.iter().next().map(|h| h.distance) else {
             continue;
         };
         let (parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator) =
-            parent.get_mut(suspension.0).unwrap();
+            parent.get_mut(child_of.0).unwrap();
+        commands
+            .entity(entity)
+            .insert(VerticalSuspensionCurrentLength(hit_distance));
         let offset = vertical_suspension.travel_distance - hit_distance;
 
         let velocity = get_point_velocity(
