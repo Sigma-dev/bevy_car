@@ -27,7 +27,7 @@ fn handle_visuals(
     children_of: Query<&ChildOf>,
     rigid_bodies: Query<(&GlobalTransform, &LinearVelocity)>,
     mut wheels: Query<(Entity, &mut Transform, &ChildOf, &CarWheelVisuals)>,
-    suspensions: Query<(&VerticalSuspensionCurrentLength)>,
+    suspensions: Query<&VerticalSuspensionCurrentLength>,
 ) {
     for (entity, mut transform, child_of, visuals) in wheels.iter_mut() {
         let Ok(suspension) = suspensions.get(child_of.0) else {

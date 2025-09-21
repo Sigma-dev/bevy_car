@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 bevy = "0.16"
+bevy_steam_p2p = { git = "https://github.com/Sigma-dev/bevy_steam_p2p", branch = "feat/generic-events-sockets" }
 car_controller = { path = "car_controller" }
 numpad_cameras = { path = "numpad_cameras" }
 avian3d = "0.3"

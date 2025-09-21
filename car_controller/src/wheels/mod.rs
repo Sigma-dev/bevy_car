@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use force_accumulator::ForceAccumulator;
 
-use crate::wheels::visuals::CarWheelVisualsPlugin;
+use crate::{inputs::CarControllerInput, wheels::visuals::CarWheelVisualsPlugin};
 
 pub mod visuals;
 pub struct CarWheelPlugin;
@@ -52,8 +52,15 @@ fn handle_rolling_resistance(
 ) {
     {
         for (global_transform, wheel, suspension) in wheels.iter() {
-            let (parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator) =
-                parents.get_mut(suspension.0).unwrap();
+            let Ok((
+                parent_global_transform,
+                linear_velocity,
+                angular_velocity,
+                mut force_accumulator,
+            )) = parents.get_mut(suspension.0)
+            else {
+                continue;
+            };
             let velocity = get_point_velocity(
                 linear_velocity.0,
                 angular_velocity.0,
@@ -71,20 +78,21 @@ fn handle_rolling_resistance(
 }
 
 fn handle_turning(
-    keyboard: Res<ButtonInput<KeyCode>>,
-    mut wheels: Query<(&mut Transform, &CarWheel)>,
+    mut wheels: Query<(&mut Transform, &CarWheel, &ChildOf)>,
+    parents: Query<&CarControllerInput>,
 ) {
-    let input = if keyboard.pressed(KeyCode::KeyA) {
-        1.0
-    } else if keyboard.pressed(KeyCode::KeyD) {
-        -1.0
-    } else {
-        return;
-    };
-    for (mut transform, wheel) in wheels.iter_mut() {
+    for (mut transform, wheel, child_of) in wheels.iter_mut() {
         if !wheel.can_turn {
             continue;
         }
+        let input = parents.get(child_of.0).unwrap();
+        let input = if input.left {
+            1.0
+        } else if input.right {
+            -1.0
+        } else {
+            continue;
+        };
         let (yaw, _, _) = transform.rotation.to_euler(EulerRot::YXZ);
         let max_angle = 30_f32.to_radians();
         let new_yaw = (yaw + input * 0.05).clamp(-max_angle, max_angle);
@@ -94,29 +102,28 @@ fn handle_turning(
 
 fn handle_power(
     mut gizmos: Gizmos,
-    keyboard: Res<ButtonInput<KeyCode>>,
     wheels: Query<(&GlobalTransform, &CarWheel, &ChildOf)>,
-    mut parents: Query<(&GlobalTransform, &mut ForceAccumulator)>,
+    mut parents: Query<(&GlobalTransform, &mut ForceAccumulator, &CarControllerInput)>,
 ) {
     for (global_transform, wheel, suspension) in wheels.iter() {
         if wheel.power == 0.0 {
             continue;
         }
+        let (parent_global_transform, mut force_accumulator, car_controller_input) =
+            parents.get_mut(suspension.0).unwrap();
         gizmos.arrow(
             global_transform.translation(),
             global_transform.translation() + *global_transform.forward() * 10.,
             Color::srgb(1.00, 0.32, 0.00),
         );
-        let input = if keyboard.pressed(KeyCode::KeyW) {
+        let input = if car_controller_input.forward {
             1.0
-        } else if keyboard.pressed(KeyCode::KeyS) {
+        } else if car_controller_input.backward {
             -1.0
         } else {
             continue;
         };
 
-        let (parent_global_transform, mut force_accumulator) =
-            parents.get_mut(suspension.0).unwrap();
         let force = global_transform.forward() * wheel.power * input;
 
         force_accumulator.apply_impulse_debug(
