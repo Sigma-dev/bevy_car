@@ -109,8 +109,11 @@ fn handle_power(
         if wheel.power == 0.0 {
             continue;
         }
-        let (parent_global_transform, mut force_accumulator, car_controller_input) =
-            parents.get_mut(suspension.0).unwrap();
+        let Ok((parent_global_transform, mut force_accumulator, car_controller_input)) =
+            parents.get_mut(suspension.0)
+        else {
+            continue;
+        };
         gizmos.arrow(
             global_transform.translation(),
             global_transform.translation() + *global_transform.forward() * 10.,
@@ -146,8 +149,11 @@ fn handle_traction(
     )>,
 ) {
     for (global_transform, wheel, suspension) in wheels.iter() {
-        let (parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator) =
-            parents.get_mut(suspension.0).unwrap();
+        let Ok((parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator)) =
+            parents.get_mut(suspension.0)
+        else {
+            continue;
+        };
         let steering_dir = global_transform.right().as_vec3();
         let velocity = get_point_velocity(
             linear_velocity.0,
