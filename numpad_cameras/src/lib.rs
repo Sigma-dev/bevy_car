@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub mod prelude {
-    pub use crate::{NumpadCamera, NumpadCamerasPlugin};
+    pub use crate::{CurrentNumpadCamera, NumpadCamera, NumpadCamerasPlugin};
 }
 
 pub struct NumpadCamerasPlugin;
@@ -22,13 +22,19 @@ const NUMPAD_KEYS: [KeyCode; 10] = [
 impl Plugin for NumpadCamerasPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CurrentNumpadCamera(KeyCode::Numpad0))
-            .add_systems(PreUpdate, handle_numpad_cameras)
-            .add_systems(PreUpdate, handle_current_numpad_camera);
+            .add_systems(PostUpdate, handle_numpad_cameras)
+            .add_systems(PostUpdate, handle_current_numpad_camera);
     }
 }
 
 #[derive(Resource)]
 pub struct CurrentNumpadCamera(KeyCode);
+
+impl CurrentNumpadCamera {
+    pub fn set(&mut self, key: KeyCode) {
+        self.0 = key;
+    }
+}
 
 #[derive(Component)]
 pub struct NumpadCamera {

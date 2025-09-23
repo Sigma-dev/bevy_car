@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 pub struct CarControllerInputPlugin;
 
@@ -8,34 +9,63 @@ impl Plugin for CarControllerInputPlugin {
     }
 }
 
-#[derive(Component)]
-pub struct CarControllerInput {
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub struct CarControllerInputs {
     pub(crate) forward: bool,
     pub(crate) backward: bool,
     pub(crate) left: bool,
     pub(crate) right: bool,
-    outside_controlled: bool,
 }
 
-impl CarControllerInput {
+impl CarControllerInputs {
+    pub fn from_keyboard(keyboard: &ButtonInput<KeyCode>) -> Self {
+        Self {
+            forward: keyboard.pressed(KeyCode::KeyW),
+            backward: keyboard.pressed(KeyCode::KeyS),
+            left: keyboard.pressed(KeyCode::KeyA),
+            right: keyboard.pressed(KeyCode::KeyD),
+        }
+    }
+}
+
+impl CarControllerInputs {
     pub fn new() -> Self {
         Self {
             forward: false,
             backward: false,
             left: false,
             right: false,
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct CarControllerInput {
+    inputs: CarControllerInputs,
+    outside_controlled: bool,
+}
+
+impl CarControllerInput {
+    pub fn new() -> Self {
+        Self {
+            inputs: CarControllerInputs::new(),
             outside_controlled: false,
         }
     }
 
     pub fn new_controlled() -> Self {
         Self {
-            forward: false,
-            backward: false,
-            left: false,
-            right: false,
+            inputs: CarControllerInputs::new(),
             outside_controlled: true,
         }
+    }
+
+    pub fn update(&mut self, inputs: CarControllerInputs) {
+        self.inputs = inputs;
+    }
+
+    pub fn get_inputs(&self) -> &CarControllerInputs {
+        &self.inputs
     }
 }
 
@@ -53,9 +83,6 @@ fn update_car_controller_input(
         if car_controller_input.outside_controlled {
             return;
         }
-        car_controller_input.forward = keyboard.pressed(KeyCode::KeyW);
-        car_controller_input.backward = keyboard.pressed(KeyCode::KeyS);
-        car_controller_input.left = keyboard.pressed(KeyCode::KeyA);
-        car_controller_input.right = keyboard.pressed(KeyCode::KeyD);
+        car_controller_input.update(CarControllerInputs::from_keyboard(&keyboard));
     }
 }

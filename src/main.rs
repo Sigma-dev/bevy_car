@@ -2,9 +2,10 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_steam_p2p::SteamP2PPlugin;
 use car_controller::prelude::*;
+use fps_camera::prelude::*;
 use numpad_cameras::prelude::*;
 
-use crate::lobby::LobbyPlugin;
+use crate::{car::CarRemoteInputsPlugin, lobby::LobbyPlugin};
 
 pub mod car;
 pub mod lobby;
@@ -20,9 +21,10 @@ fn main() -> AppExit {
         .add_plugins((
             SteamP2PPlugin,
             NumpadCamerasPlugin,
+            FpsCameraPlugin,
             CarControllerPlugin,
             CarControllerDebugPlugin,
         ))
-        .add_plugins((LobbyPlugin,))
+        .add_plugins((LobbyPlugin, CarRemoteInputsPlugin))
         .run()
 }

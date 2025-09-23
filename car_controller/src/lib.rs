@@ -8,7 +8,7 @@ use crate::{
 };
 
 pub mod debug;
-mod inputs;
+pub mod inputs;
 pub mod prelude;
 mod vertical_suspension;
 mod wheels;

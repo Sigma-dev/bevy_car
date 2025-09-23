@@ -85,7 +85,7 @@ fn handle_turning(
         if !wheel.can_turn {
             continue;
         }
-        let input = parents.get(child_of.0).unwrap();
+        let input = parents.get(child_of.0).unwrap().get_inputs();
         let input = if input.left {
             1.0
         } else if input.right {
@@ -119,9 +119,10 @@ fn handle_power(
             global_transform.translation() + *global_transform.forward() * 10.,
             Color::srgb(1.00, 0.32, 0.00),
         );
-        let input = if car_controller_input.forward {
+        let inputs = car_controller_input.get_inputs();
+        let input = if inputs.forward {
             1.0
-        } else if car_controller_input.backward {
+        } else if inputs.backward {
             -1.0
         } else {
             continue;
