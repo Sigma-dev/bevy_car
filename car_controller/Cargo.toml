@@ -6,4 +6,5 @@ edition = "2024"
 [dependencies]
 bevy = "0.16"
 avian3d = "0.3"
+serde = "1.0.209"
 force_accumulator = { path = "../force_accumulator" }

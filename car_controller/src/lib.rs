@@ -1,9 +1,14 @@
 use bevy::prelude::*;
 use force_accumulator::prelude::*;
 
-use crate::{vertical_suspension::VerticalSuspensionPlugin, wheels::CarWheelPlugin};
+use crate::{
+    inputs::{CarControllerInput, CarControllerInputPlugin},
+    vertical_suspension::VerticalSuspensionPlugin,
+    wheels::CarWheelPlugin,
+};
 
 pub mod debug;
+pub mod inputs;
 pub mod prelude;
 mod vertical_suspension;
 mod wheels;
@@ -13,6 +18,7 @@ impl Plugin for CarControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             CarWheelPlugin,
+            CarControllerInputPlugin,
             VerticalSuspensionPlugin,
             ForceAccumulatorPlugin,
         ))
@@ -21,6 +27,7 @@ impl Plugin for CarControllerPlugin {
 }
 
 #[derive(Component)]
+#[require(CarControllerInput)]
 pub struct CarController;
 
 fn on_car_controller_added(

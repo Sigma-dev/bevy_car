@@ -5,9 +5,12 @@ edition = "2024"
 
 [dependencies]
 bevy = "0.16"
+bevy_steam_p2p = { git = "https://github.com/Sigma-dev/bevy_steam_p2p", branch = "feat/generic-events-sockets" }
 car_controller = { path = "car_controller" }
 numpad_cameras = { path = "numpad_cameras" }
+fps_camera = { path = "fps_camera" }
 avian3d = "0.3"
+serde = "1.0.209"
 # Set max log levels. This helps avoid unwanted low-severity log spam, which can affect performance.
 log = { version = "0.4", features = [
     "max_level_debug",
