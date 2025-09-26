@@ -5,7 +5,7 @@ use car_controller::prelude::*;
 use fps_camera::FpsCamera;
 use numpad_cameras::NumpadCamera;
 
-use crate::car::{inputs::RemotelyControlled, steering_wheel::SteeringWheel};
+use crate::car::{horn::Horn, inputs::RemotelyControlled, steering_wheel::SteeringWheel};
 
 pub fn spawn_car(
     commands: &mut Commands,
@@ -28,26 +28,32 @@ pub fn spawn_car(
             Visibility::Inherited,
             network_identity,
             NetworkedTransform::new(true, true, false),
-            children![(
-                Visibility::Inherited,
-                Transform::from_xyz(-0.3, 1.25, -0.5).with_rotation(Quat::from_euler(
-                    EulerRot::XYZ,
-                    22_5_f32.to_radians(),
-                    0_f32.to_radians(),
-                    180_f32.to_radians(),
-                )),
-                children![(
-                    SceneRoot(
-                        asset_server.load(
-                            GltfAssetLabel::Scene(0)
-                                .from_asset("models/steering_wheels/steering_wheel.glb")
+            children![
+                (
+                    Collider::cuboid(2., 1., 5.),
+                    Transform::from_xyz(0.0, 1., 0.0),
+                ),
+                (
+                    Visibility::Inherited,
+                    Transform::from_xyz(-0.3, 1.25, -0.5).with_rotation(Quat::from_euler(
+                        EulerRot::XYZ,
+                        22_5_f32.to_radians(),
+                        0_f32.to_radians(),
+                        180_f32.to_radians(),
+                    )),
+                    children![(
+                        SceneRoot(
+                            asset_server.load(
+                                GltfAssetLabel::Scene(0)
+                                    .from_asset("models/steering_wheels/steering_wheel.glb")
+                            ),
                         ),
-                    ),
-                    SteeringWheel {
-                        rotation_multiplier: 12.0,
-                    },
-                ),],
-            )],
+                        SteeringWheel {
+                            rotation_multiplier: 12.0,
+                        },
+                    ),],
+                )
+            ],
         ))
         .id();
 
@@ -65,11 +71,10 @@ pub fn spawn_car(
     }
 
     if is_local {
+        commands
+            .entity(car)
+            .insert((SpatialListener::default(), Horn));
         commands.entity(car).with_children(|parent| {
-            parent.spawn((
-                Collider::cuboid(2., 1., 5.),
-                Transform::from_xyz(0.0, 1., 0.0),
-            ));
             parent.spawn((
                 Camera3d::default(),
                 NumpadCamera::new(KeyCode::Numpad1),

@@ -1,6 +1,7 @@
+use audio_manager::prelude::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
-use bevy_steam_p2p::SteamP2PPlugin;
+use bevy_steam_p2p::prelude::*;
 use car_controller::prelude::*;
 use fps_camera::prelude::*;
 use numpad_cameras::prelude::*;
@@ -24,6 +25,7 @@ fn main() -> AppExit {
             FpsCameraPlugin,
             CarControllerPlugin,
             CarControllerDebugPlugin,
+            AudioManagerPlugin::default(),
         ))
         .add_plugins((LobbyPlugin, GameCarPlugin))
         .run()
