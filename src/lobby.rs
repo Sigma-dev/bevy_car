@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_steam_p2p::prelude::*;
 use numpad_cameras::prelude::*;
 
-use crate::{car::spawn_car, world::spawn_world};
+use crate::{car::spawn::spawn_car, world::spawn_world};
 
 pub struct LobbyPlugin;
 impl Plugin for LobbyPlugin {

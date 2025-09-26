@@ -5,7 +5,7 @@ use car_controller::prelude::*;
 use fps_camera::prelude::*;
 use numpad_cameras::prelude::*;
 
-use crate::{car::CarRemoteInputsPlugin, lobby::LobbyPlugin};
+use crate::{car::GameCarPlugin, lobby::LobbyPlugin};
 
 pub mod car;
 pub mod lobby;
@@ -25,6 +25,6 @@ fn main() -> AppExit {
             CarControllerPlugin,
             CarControllerDebugPlugin,
         ))
-        .add_plugins((LobbyPlugin, CarRemoteInputsPlugin))
+        .add_plugins((LobbyPlugin, GameCarPlugin))
         .run()
 }

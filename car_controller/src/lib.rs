@@ -22,13 +22,27 @@ impl Plugin for CarControllerPlugin {
             VerticalSuspensionPlugin,
             ForceAccumulatorPlugin,
         ))
-        .add_systems(Update, on_car_controller_added);
+        .add_systems(Update, (on_car_controller_added, handle_turning));
     }
 }
 
 #[derive(Component)]
 #[require(CarControllerInput)]
-pub struct CarController;
+pub struct CarController {
+    pub steering_speed: f32,
+    pub steer_angle: f32,
+    pub max_steer_angle: f32,
+}
+
+impl CarController {
+    pub fn new() -> Self {
+        Self {
+            steering_speed: 1.,
+            steer_angle: 0.0,
+            max_steer_angle: 30_f32.to_radians(),
+        }
+    }
+}
 
 fn on_car_controller_added(
     mut commands: Commands,
@@ -38,5 +52,27 @@ fn on_car_controller_added(
         commands
             .entity(car_controller)
             .insert(ForceAccumulator::new());
+    }
+}
+
+fn handle_turning(
+    time: Res<Time>,
+    mut car_controller: Query<(&mut CarController, &CarControllerInput)>,
+) {
+    for (mut car_controller, car_controller_input) in car_controller.iter_mut() {
+        let input = car_controller_input.get_inputs();
+        let input = if input.left {
+            1.0
+        } else if input.right {
+            -1.0
+        } else {
+            continue;
+        };
+
+        car_controller.steer_angle += input * time.delta_secs() * car_controller.steering_speed;
+        car_controller.steer_angle = car_controller.steer_angle.clamp(
+            -car_controller.max_steer_angle,
+            car_controller.max_steer_angle,
+        );
     }
 }

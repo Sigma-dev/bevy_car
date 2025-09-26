@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use force_accumulator::ForceAccumulator;
 
-use crate::{inputs::CarControllerInput, wheels::visuals::CarWheelVisualsPlugin};
+use crate::{CarController, inputs::CarControllerInput, wheels::visuals::CarWheelVisualsPlugin};
 
 pub mod visuals;
 pub struct CarWheelPlugin;
@@ -79,24 +79,14 @@ fn handle_rolling_resistance(
 
 fn handle_turning(
     mut wheels: Query<(&mut Transform, &CarWheel, &ChildOf)>,
-    parents: Query<&CarControllerInput>,
+    parents: Query<&CarController>,
 ) {
     for (mut transform, wheel, child_of) in wheels.iter_mut() {
         if !wheel.can_turn {
             continue;
         }
-        let input = parents.get(child_of.0).unwrap().get_inputs();
-        let input = if input.left {
-            1.0
-        } else if input.right {
-            -1.0
-        } else {
-            continue;
-        };
-        let (yaw, _, _) = transform.rotation.to_euler(EulerRot::YXZ);
-        let max_angle = 30_f32.to_radians();
-        let new_yaw = (yaw + input * 0.05).clamp(-max_angle, max_angle);
-        transform.rotation = Quat::from_rotation_y(new_yaw);
+        let car_controller = parents.get(child_of.0).unwrap();
+        transform.rotation = Quat::from_rotation_y(car_controller.steer_angle);
     }
 }
 
