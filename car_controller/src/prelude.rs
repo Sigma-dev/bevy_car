@@ -1,5 +1,5 @@
 pub use crate::{
-    CarController, CarControllerPlugin,
+    CarController, CarControllerEngine, CarControllerPlugin,
     debug::CarControllerDebugPlugin,
     inputs::{CarControllerInput, CarControllerInputs},
     vertical_suspension::VerticalSuspension,

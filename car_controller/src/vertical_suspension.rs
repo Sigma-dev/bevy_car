@@ -65,8 +65,11 @@ fn handle_vertical_suspension(
         let Some(hit_distance) = hits.iter().next().map(|h| h.distance) else {
             continue;
         };
-        let (parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator) =
-            parent.get_mut(child_of.0).unwrap();
+        let Ok((parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator)) =
+            parent.get_mut(child_of.0)
+        else {
+            continue;
+        };
         commands
             .entity(entity)
             .insert(VerticalSuspensionCurrentLength(hit_distance));

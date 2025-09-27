@@ -2,7 +2,10 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use force_accumulator::ForceAccumulator;
 
-use crate::{CarController, inputs::CarControllerInput, wheels::visuals::CarWheelVisualsPlugin};
+use crate::{
+    CarController, CarControllerEngine, inputs::CarControllerInput,
+    wheels::visuals::CarWheelVisualsPlugin,
+};
 
 pub mod visuals;
 pub struct CarWheelPlugin;
@@ -24,16 +27,16 @@ impl Plugin for CarWheelPlugin {
 
 #[derive(Component)]
 pub struct CarWheel {
-    power: f32,
     grip: f32,
     rolling_resistance: f32,
+    is_powered: bool,
     can_turn: bool,
 }
 
 impl CarWheel {
-    pub fn new(power: f32, grip: f32, rolling_resistance: f32, can_turn: bool) -> Self {
+    pub fn new(grip: f32, rolling_resistance: f32, can_turn: bool, is_powered: bool) -> Self {
         Self {
-            power,
+            is_powered,
             grip,
             rolling_resistance,
             can_turn,
@@ -93,14 +96,23 @@ fn handle_turning(
 fn handle_power(
     mut gizmos: Gizmos,
     wheels: Query<(&GlobalTransform, &CarWheel, &ChildOf)>,
-    mut parents: Query<(&GlobalTransform, &mut ForceAccumulator, &CarControllerInput)>,
+    mut parents: Query<(
+        &GlobalTransform,
+        &mut ForceAccumulator,
+        &CarControllerInput,
+        &CarControllerEngine,
+    )>,
 ) {
     for (global_transform, wheel, suspension) in wheels.iter() {
-        if wheel.power == 0.0 {
+        if wheel.is_powered == false {
             continue;
         }
-        let Ok((parent_global_transform, mut force_accumulator, car_controller_input)) =
-            parents.get_mut(suspension.0)
+        let Ok((
+            parent_global_transform,
+            mut force_accumulator,
+            car_controller_input,
+            car_controller_engine,
+        )) = parents.get_mut(suspension.0)
         else {
             continue;
         };
@@ -118,7 +130,7 @@ fn handle_power(
             continue;
         };
 
-        let force = global_transform.forward() * wheel.power * input;
+        let force = global_transform.forward() * car_controller_engine.get_power() * input;
 
         force_accumulator.apply_impulse_debug(
             force,

@@ -57,14 +57,13 @@ pub fn spawn_car(
         ))
         .id();
 
+    if is_lobby_owner {
+        commands.entity(car).insert(CarControllerEngine::new());
+    }
     if let Some(steam_id) = remotely_controlled_by {
-        commands.entity(car).insert((
-            CarControllerInput::new_controlled(),
-            RemotelyControlled(steam_id),
-        ));
-    } else if is_lobby_owner {
-        commands.entity(car).insert(CarControllerInput::new());
-    } else {
+        commands.entity(car).insert((RemotelyControlled(steam_id),));
+    }
+    if !is_local {
         commands
             .entity(car)
             .insert(CarControllerInput::new_controlled());
@@ -105,7 +104,7 @@ pub fn spawn_car(
         commands.spawn((
             ChildOf(car),
             Mass(1.),
-            CarWheel::new(if front { 2. } else { 0.0 }, 0.15, 0.05, front),
+            CarWheel::new(0.15, 0.05, front, front),
             VerticalSuspension::new(10., 0.5, 0.6),
             Transform::from_xyz(
                 if right { 1. } else { -1. } * 0.75,

@@ -39,7 +39,7 @@ impl CarControllerInputs {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct CarControllerInput {
     inputs: CarControllerInputs,
     outside_controlled: bool,
@@ -81,7 +81,7 @@ fn update_car_controller_input(
 ) {
     for mut car_controller_input in car_controller_input.iter_mut() {
         if car_controller_input.outside_controlled {
-            return;
+            continue;
         }
         car_controller_input.update(CarControllerInputs::from_keyboard(&keyboard));
     }

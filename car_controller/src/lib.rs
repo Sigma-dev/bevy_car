@@ -26,7 +26,7 @@ impl Plugin for CarControllerPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 #[require(CarControllerInput)]
 pub struct CarController {
     pub steering_speed: f32,
@@ -41,6 +41,21 @@ impl CarController {
             steer_angle: 0.0,
             max_steer_angle: 30_f32.to_radians(),
         }
+    }
+}
+
+#[derive(Component)]
+pub struct CarControllerEngine {
+    power: f32,
+}
+
+impl CarControllerEngine {
+    pub fn new() -> Self {
+        Self { power: 2.0 }
+    }
+
+    pub fn get_power(&self) -> f32 {
+        self.power
     }
 }
 
