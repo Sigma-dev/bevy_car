@@ -5,7 +5,10 @@ use car_controller::prelude::*;
 use fps_camera::FpsCamera;
 use numpad_cameras::NumpadCamera;
 
-use crate::car::{horn::Horn, inputs::RemotelyControlled, steering_wheel::SteeringWheel};
+use crate::{
+    camera::CameraBundle,
+    car::{horn::Horn, inputs::RemotelyControlled, steering_wheel::SteeringWheel},
+};
 
 pub fn spawn_car(
     commands: &mut Commands,
@@ -49,7 +52,7 @@ pub fn spawn_car(
                             ),
                         ),
                         SteeringWheel {
-                            rotation_multiplier: 12.0,
+                            rotation_multiplier: 9.0,
                         },
                     ),],
                 )
@@ -75,22 +78,22 @@ pub fn spawn_car(
             .insert((SpatialListener::default(), Horn));
         commands.entity(car).with_children(|parent| {
             parent.spawn((
-                Camera3d::default(),
+                CameraBundle::new(),
                 NumpadCamera::new(KeyCode::Numpad1),
                 Transform::from_xyz(0.0, 0., 10.0).looking_at(Vec3::ZERO, Vec3::Y),
             ));
             parent.spawn((
-                Camera3d::default(),
+                CameraBundle::new(),
                 NumpadCamera::new(KeyCode::Numpad2),
                 Transform::from_xyz(5., 0., 1.5).looking_at(Vec3::new(0., 0., 1.5), Vec3::Y),
             ));
             parent.spawn((
-                Camera3d::default(),
+                CameraBundle::new(),
                 NumpadCamera::new(KeyCode::Numpad3),
                 Transform::from_xyz(0.0, 5., 10.0).looking_at(Vec3::ZERO, Vec3::Y),
             ));
             parent.spawn((
-                Camera3d::default(),
+                CameraBundle::new(),
                 NumpadCamera::new(KeyCode::Numpad4),
                 Transform::from_xyz(-0.3, 1.4, 0.0),
                 FpsCamera::new(0.1),

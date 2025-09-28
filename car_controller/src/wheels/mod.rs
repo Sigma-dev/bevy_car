@@ -94,7 +94,6 @@ fn handle_turning(
 }
 
 fn handle_power(
-    mut gizmos: Gizmos,
     wheels: Query<(&GlobalTransform, &CarWheel, &ChildOf)>,
     mut parents: Query<(
         &GlobalTransform,
@@ -116,11 +115,7 @@ fn handle_power(
         else {
             continue;
         };
-        gizmos.arrow(
-            global_transform.translation(),
-            global_transform.translation() + *global_transform.forward() * 10.,
-            Color::srgb(1.00, 0.32, 0.00),
-        );
+
         let inputs = car_controller_input.get_inputs();
         let input = if inputs.forward {
             1.0

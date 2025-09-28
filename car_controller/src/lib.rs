@@ -20,7 +20,7 @@ impl Plugin for CarControllerPlugin {
             CarWheelPlugin,
             CarControllerInputPlugin,
             VerticalSuspensionPlugin,
-            ForceAccumulatorPlugin,
+            ForceAccumulatorPlugin::new(),
         ))
         .add_systems(Update, (on_car_controller_added, handle_turning));
     }
@@ -37,7 +37,7 @@ pub struct CarController {
 impl CarController {
     pub fn new() -> Self {
         Self {
-            steering_speed: 1.,
+            steering_speed: 1.5,
             steer_angle: 0.0,
             max_steer_angle: 30_f32.to_radians(),
         }

@@ -3,13 +3,31 @@ use bevy::prelude::*;
 
 pub mod prelude;
 
-pub struct ForceAccumulatorPlugin;
+pub struct ForceAccumulatorPlugin {
+    debug: bool,
+}
+
+impl ForceAccumulatorPlugin {
+    pub fn new() -> Self {
+        Self { debug: false }
+    }
+
+    fn new_debug() -> Self {
+        Self { debug: true }
+    }
+}
 
 impl Plugin for ForceAccumulatorPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(FixedPostUpdate, update_force_accumulator);
+        if self.debug {
+            app.insert_resource(ForceAccumulatorDebug);
+        }
     }
 }
+
+#[derive(Resource)]
+pub struct ForceAccumulatorDebug;
 
 #[derive(Component)]
 pub struct ForceAccumulator {
@@ -87,6 +105,7 @@ fn update_force_accumulator(
     mut commands: Commands,
     time: Res<Time<Fixed>>,
     mut gizmos: Gizmos,
+    force_accumulator_debug: Option<Res<ForceAccumulatorDebug>>,
     mut force_accumulators: Query<(
         Entity,
         &ComputedMass,
@@ -107,7 +126,9 @@ fn update_force_accumulator(
                 force.force
             };
             external_force.apply_force_at_point(computed_force, force.point, force.center_of_mass);
-            if let Some(color) = force.debug_color {
+            if let Some(color) = force.debug_color
+                && force_accumulator_debug.is_some()
+            {
                 gizmos.arrow(force.point, force.point + force.force, color);
             }
         }

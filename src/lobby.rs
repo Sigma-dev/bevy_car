@@ -25,6 +25,8 @@ fn menu(client: ResMut<SteamP2PClient>, keys: Res<ButtonInput<KeyCode>>) {
     }
 }
 
+const POSITION: Vec3 = Vec3::new(-7., 0.5, 5.);
+
 fn on_lobby_join(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -41,7 +43,7 @@ fn on_lobby_join(
                 .instantiate(
                     FilePath::new("Player_owner"),
                     None,
-                    Transform::from_translation(Vec3::new(0., 0.5, 0.)),
+                    Transform::from_translation(POSITION),
                 )
                 .expect("Couldn't spawn player");
         }
@@ -53,12 +55,15 @@ fn on_other_joined(
     mut client: ResMut<SteamP2PClient>,
 ) {
     for OtherJoined(other_joined) in other_joined_r.read() {
+        let count = client.get_lobby_member_count().unwrap();
         if client.is_lobby_owner().unwrap() {
             client
                 .instantiate(
                     FilePath::new(&other_joined.raw().to_string()),
                     None,
-                    Transform::from_translation(Vec3::new(5., 0.5, 0.)),
+                    Transform::from_translation(
+                        POSITION + Vec3::new((count - 1) as f32 * 4., 0., 0.),
+                    ),
                 )
                 .expect("Couldn't spawn player");
         }

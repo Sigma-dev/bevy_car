@@ -29,6 +29,11 @@ fn handle_debug(
             global_transform.translation() + velocity * 10.,
             Color::srgb(0.77, 0.02, 0.87),
         );
+        gizmos.arrow(
+            global_transform.translation(),
+            global_transform.translation() + *global_transform.forward() * 10.,
+            Color::srgb(1.00, 0.32, 0.00),
+        );
     }
 }
 

@@ -8,23 +8,19 @@ use numpad_cameras::prelude::*;
 
 use crate::{car::GameCarPlugin, lobby::LobbyPlugin};
 
+mod camera;
 pub mod car;
 pub mod lobby;
 pub mod world;
 
 fn main() -> AppExit {
     App::new()
-        .add_plugins((
-            DefaultPlugins,
-            PhysicsPlugins::default(),
-            PhysicsDebugPlugin::default(),
-        ))
+        .add_plugins((DefaultPlugins, PhysicsPlugins::default()))
         .add_plugins((
             SteamP2PPlugin,
             NumpadCamerasPlugin,
             FpsCameraPlugin,
             CarControllerPlugin,
-            CarControllerDebugPlugin,
             AudioManagerPlugin::default(),
         ))
         .add_plugins((LobbyPlugin, GameCarPlugin))
