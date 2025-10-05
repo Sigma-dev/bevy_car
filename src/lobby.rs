@@ -1,8 +1,14 @@
+use avian3d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use bevy_steam_p2p::prelude::*;
+use car_controller::prelude::*;
 use numpad_cameras::prelude::*;
+use serde::{Deserialize, Serialize};
 
-use crate::{car::spawn::spawn_car, world::spawn_world};
+use crate::{
+    car::{inputs::RemotelyControlled, spawn::spawn_car},
+    world::spawn_world,
+};
 
 pub struct LobbyPlugin;
 impl Plugin for LobbyPlugin {
@@ -10,12 +16,77 @@ impl Plugin for LobbyPlugin {
         app.add_systems(
             Update,
             (
+                start_game,
                 menu,
+                on_race_started,
                 on_lobby_join,
                 on_other_joined,
                 handle_unhandled_instantiations,
             ),
-        );
+        )
+        .add_systems(PostUpdate, waiting)
+        .insert_resource(CurrentGameState(GameState::Waiting))
+        .add_networked_message::<RaceStarted>();
+    }
+}
+
+#[derive(Resource)]
+pub struct CurrentGameState(pub GameState);
+
+#[derive(PartialEq, Eq)]
+pub enum GameState {
+    Waiting,
+    Race,
+}
+
+#[derive(Message, Serialize, Deserialize, Clone, Copy)]
+pub struct RaceStarted;
+
+fn waiting(
+    current_game_state: Res<CurrentGameState>,
+    mut cars: Query<&mut LinearVelocity, With<CarController>>,
+) {
+    if current_game_state.0 != GameState::Waiting {
+        return;
+    }
+    for mut linear_velocity in cars.iter_mut() {
+        linear_velocity.0 = Vec3::ZERO;
+    }
+}
+
+fn start_game(
+    client: ResMut<SteamP2PClient>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut evs_race_started: MessageWriter<RaceStarted>,
+) {
+    let Ok(is_lobby_owner) = client.is_lobby_owner() else {
+        return;
+    };
+    if is_lobby_owner && keyboard_input.just_pressed(KeyCode::KeyP) {
+        evs_race_started.write(RaceStarted);
+    }
+}
+
+fn on_race_started(
+    mut commands: Commands,
+    client: ResMut<SteamP2PClient>,
+    mut current_game_state: ResMut<CurrentGameState>,
+    mut evs_race_started: MessageReader<RaceStarted>,
+    cars: Query<(Entity, Option<&RemotelyControlled>), With<CarController>>,
+) {
+    for RaceStarted in evs_race_started.read() {
+        if current_game_state.0 != GameState::Waiting {
+            return;
+        }
+        current_game_state.0 = GameState::Race;
+        if !client.is_lobby_owner().unwrap_or(false) {
+            return;
+        }
+        for (car, maybe_remotely_controlled) in cars.iter() {
+            if maybe_remotely_controlled.is_none() {
+                commands.entity(car).insert(CarControllerInput::new());
+            }
+        }
     }
 }
 

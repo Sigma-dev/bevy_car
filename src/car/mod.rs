@@ -4,7 +4,7 @@ use crate::car::{
 use bevy::prelude::*;
 
 mod horn;
-mod inputs;
+pub mod inputs;
 pub mod spawn;
 pub mod steering_wheel;
 

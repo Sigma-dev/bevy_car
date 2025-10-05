@@ -25,6 +25,7 @@ pub fn spawn_car(
                 asset_server.load(GltfAssetLabel::Scene(0).from_asset("models/cars/truck.glb")),
             ),
             CarController::new(),
+            CarControllerInput::new_controlled(),
             RigidBody::Dynamic,
             CenterOfMass::ZERO,
             Mass(100.),
@@ -66,11 +67,6 @@ pub fn spawn_car(
     }
     if let Some(steam_id) = remotely_controlled_by {
         commands.entity(car).insert((RemotelyControlled(steam_id),));
-    }
-    if !is_local {
-        commands
-            .entity(car)
-            .insert(CarControllerInput::new_controlled());
     }
 
     if is_local {

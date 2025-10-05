@@ -3,6 +3,8 @@ use bevy_steam_p2p::prelude::*;
 use car_controller::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::lobby::{CurrentGameState, GameState};
+
 pub struct CarRemoteInputsPlugin;
 impl Plugin for CarRemoteInputsPlugin {
     fn build(&self, app: &mut App) {
@@ -32,10 +34,14 @@ fn emit_inputs(
 
 fn receive_inputs(
     client: Res<SteamP2PClient>,
+    current_game_state: Res<CurrentGameState>,
     mut remote_inputs: MessageReader<CarRemoteInputs>,
     mut car_controller_input: Query<(&RemotelyControlled, &mut CarControllerInput)>,
 ) {
     if !client.is_lobby_owner().unwrap_or(false) {
+        return;
+    }
+    if current_game_state.0 != GameState::Race {
         return;
     }
     for CarRemoteInputs(steam_id, inputs) in remote_inputs.read() {
