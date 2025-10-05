@@ -27,6 +27,7 @@ pub fn spawn_car(
             CarController::new(),
             RigidBody::Dynamic,
             CenterOfMass::ZERO,
+            Mass(100.),
             transform,
             Visibility::Inherited,
             network_identity,
@@ -108,7 +109,7 @@ pub fn spawn_car(
             ChildOf(car),
             Mass(1.),
             CarWheel::new(0.15, 0.05, front, front),
-            VerticalSuspension::new(10., 0.5, 0.6),
+            VerticalSuspension::new(50., 2., 0.6),
             Transform::from_xyz(
                 if right { 1. } else { -1. } * 0.75,
                 0.1,

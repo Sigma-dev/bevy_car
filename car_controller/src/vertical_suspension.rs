@@ -1,6 +1,5 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
-use force_accumulator::prelude::*;
 
 pub struct VerticalSuspensionPlugin;
 
@@ -52,12 +51,7 @@ fn handle_vertical_suspension(
         &ChildOf,
         &RayHits,
     )>,
-    mut parent: Query<(
-        &GlobalTransform,
-        &LinearVelocity,
-        &AngularVelocity,
-        &mut ForceAccumulator,
-    )>,
+    mut parent: Query<Forces>,
 ) {
     for (entity, global_transform, vertical_suspension, child_of, hits) in
         vertical_suspensions.iter()
@@ -65,9 +59,7 @@ fn handle_vertical_suspension(
         let Some(hit_distance) = hits.iter().next().map(|h| h.distance) else {
             continue;
         };
-        let Ok((parent_global_transform, linear_velocity, angular_velocity, mut force_accumulator)) =
-            parent.get_mut(child_of.0)
-        else {
+        let Ok(mut forces) = parent.get_mut(child_of.0) else {
             continue;
         };
         commands
@@ -75,24 +67,11 @@ fn handle_vertical_suspension(
             .insert(VerticalSuspensionCurrentLength(hit_distance));
         let offset = vertical_suspension.travel_distance - hit_distance;
 
-        let velocity = get_point_velocity(
-            linear_velocity.0,
-            angular_velocity.0,
-            global_transform.translation() - parent_global_transform.translation(),
-        );
+        let velocity = forces.velocity_at_point(global_transform.translation());
         let y_velocity = velocity.dot(*global_transform.up()) * global_transform.up();
         let force = (global_transform.up() * offset * vertical_suspension.stiffness)
             - (y_velocity * vertical_suspension.damping_ratio);
 
-        force_accumulator.apply_impulse_debug(
-            force,
-            global_transform.translation(),
-            parent_global_transform.translation(),
-            Color::srgb(0.0, 1.0, 0.0),
-        );
+        forces.apply_linear_impulse_at_point(force, global_transform.translation());
     }
-}
-
-fn get_point_velocity(linear_velocity: Vec3, angular_velocity: Vec3, point: Vec3) -> Vec3 {
-    linear_velocity + angular_velocity.cross(point)
 }

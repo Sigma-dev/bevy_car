@@ -1,5 +1,5 @@
 use avian3d::prelude::*;
-use bevy::{pbr::light_consts::lux, prelude::*};
+use bevy::{light::light_consts::lux, prelude::*};
 use numpad_cameras::NumpadCamera;
 
 use crate::camera::CameraBundle;

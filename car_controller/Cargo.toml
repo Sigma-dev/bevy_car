@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = "0.16"
-avian3d = "0.3"
+bevy = "0.17"
+avian3d = { git = "https://github.com/Jondolf/avian" }
 serde = "1.0.209"
-force_accumulator = { path = "../force_accumulator" }

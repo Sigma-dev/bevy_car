@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use force_accumulator::prelude::*;
 
 use crate::{
     inputs::{CarControllerInput, CarControllerInputPlugin},
@@ -20,9 +19,8 @@ impl Plugin for CarControllerPlugin {
             CarWheelPlugin,
             CarControllerInputPlugin,
             VerticalSuspensionPlugin,
-            ForceAccumulatorPlugin::new(),
         ))
-        .add_systems(Update, (on_car_controller_added, handle_turning));
+        .add_systems(Update, handle_turning);
     }
 }
 
@@ -51,22 +49,11 @@ pub struct CarControllerEngine {
 
 impl CarControllerEngine {
     pub fn new() -> Self {
-        Self { power: 2.0 }
+        Self { power: 1.0 }
     }
 
     pub fn get_power(&self) -> f32 {
-        self.power
-    }
-}
-
-fn on_car_controller_added(
-    mut commands: Commands,
-    car_controller: Query<Entity, Added<CarController>>,
-) {
-    for car_controller in car_controller.iter() {
-        commands
-            .entity(car_controller)
-            .insert(ForceAccumulator::new());
+        self.power * 5.
     }
 }
 

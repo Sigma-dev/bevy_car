@@ -1,6 +1,6 @@
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::window::{CursorGrabMode, PrimaryWindow};
+use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 
 pub mod prelude {
     pub use crate::{FpsCamera, FpsCameraPlugin};
@@ -43,24 +43,23 @@ impl FpsCamera {
 
 fn setup(
     query: Query<(&Camera, Option<&ShowCursor>), With<FpsCamera>>,
-    mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
+    mut primary_cursor_options: Single<&mut CursorOptions, With<PrimaryWindow>>,
 ) {
-    let mut primary_window = q_windows.single_mut().unwrap();
     let Ok((camera, show_cursor)) = query.single() else {
         return;
     };
     if camera.is_active && show_cursor.is_none() {
-        primary_window.cursor_options.grab_mode = CursorGrabMode::Locked;
-        primary_window.cursor_options.visible = false;
+        primary_cursor_options.grab_mode = CursorGrabMode::Locked;
+        primary_cursor_options.visible = false;
     } else {
-        primary_window.cursor_options.grab_mode = CursorGrabMode::None;
-        primary_window.cursor_options.visible = true;
+        primary_cursor_options.grab_mode = CursorGrabMode::None;
+        primary_cursor_options.visible = true;
     }
 }
 
 fn handle_fps_cameras(
     mut query: Query<(Entity, &FpsCamera, Option<&ChildOf>)>,
-    mut motion_evr: EventReader<MouseMotion>,
+    mut motion_evr: MessageReader<MouseMotion>,
     mut transform_query: Query<&mut Transform>,
     time: Res<Time>,
 ) {

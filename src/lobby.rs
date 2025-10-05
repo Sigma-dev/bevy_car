@@ -30,7 +30,7 @@ const POSITION: Vec3 = Vec3::new(-7., 0.5, 5.);
 fn on_lobby_join(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut join_r: EventReader<LobbyJoined>,
+    mut join_r: MessageReader<LobbyJoined>,
     mut client: ResMut<SteamP2PClient>,
     mut current_numpad_camera: ResMut<CurrentNumpadCamera>,
 ) {
@@ -51,7 +51,7 @@ fn on_lobby_join(
 }
 
 fn on_other_joined(
-    mut other_joined_r: EventReader<OtherJoined>,
+    mut other_joined_r: MessageReader<OtherJoined>,
     mut client: ResMut<SteamP2PClient>,
 ) {
     for OtherJoined(other_joined) in other_joined_r.read() {
@@ -72,7 +72,7 @@ fn on_other_joined(
 
 fn handle_unhandled_instantiations(
     mut commands: Commands,
-    mut evs_unhandled: EventReader<UnhandledInstantiation>,
+    mut evs_unhandled: MessageReader<UnhandledInstantiation>,
     asset_server: ResMut<AssetServer>,
     client: ResMut<SteamP2PClient>,
 ) {

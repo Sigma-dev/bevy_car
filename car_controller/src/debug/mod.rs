@@ -14,16 +14,11 @@ impl Plugin for CarControllerDebugPlugin {
 fn handle_debug(
     mut gizmos: Gizmos,
     wheels: Query<(&GlobalTransform, &ChildOf), With<CarWheel>>,
-    parents: Query<(&GlobalTransform, &mut LinearVelocity, &mut AngularVelocity)>,
+    mut cars: Query<Forces>,
 ) {
     for (global_transform, child_of) in wheels.iter() {
-        let (parent_global_transform, linear_velocity, angular_velocity) =
-            parents.get(child_of.0).unwrap();
-        let velocity = get_point_velocity(
-            linear_velocity.0,
-            angular_velocity.0,
-            global_transform.translation() - parent_global_transform.translation(),
-        );
+        let forces = cars.get_mut(child_of.0).unwrap();
+        let velocity = forces.velocity_at_point(global_transform.translation());
         gizmos.arrow(
             global_transform.translation(),
             global_transform.translation() + velocity * 10.,
@@ -35,8 +30,4 @@ fn handle_debug(
             Color::srgb(1.00, 0.32, 0.00),
         );
     }
-}
-
-fn get_point_velocity(linear_velocity: Vec3, angular_velocity: Vec3, point: Vec3) -> Vec3 {
-    linear_velocity + angular_velocity.cross(point)
 }
