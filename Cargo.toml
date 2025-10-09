@@ -10,6 +10,7 @@ car_controller = { path = "car_controller" }
 numpad_cameras = { path = "numpad_cameras" }
 fps_camera = { path = "fps_camera" }
 audio_manager = { path = "audio_manager" }
+replace_material = { path = "replace_material" }
 avian3d = { git = "https://github.com/Jondolf/avian" }
 serde = "1.0.209"
 # Set max log levels. This helps avoid unwanted low-severity log spam, which can affect performance.

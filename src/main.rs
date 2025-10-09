@@ -5,6 +5,7 @@ use bevy_steam_p2p::prelude::*;
 use car_controller::prelude::*;
 use fps_camera::prelude::*;
 use numpad_cameras::prelude::*;
+use replace_material::prelude::*;
 
 use crate::{car::GameCarPlugin, lobby::LobbyPlugin};
 
@@ -22,6 +23,7 @@ fn main() -> AppExit {
             FpsCameraPlugin,
             CarControllerPlugin,
             AudioManagerPlugin::default(),
+            ReplaceMaterialPlugin,
         ))
         .add_plugins((LobbyPlugin, GameCarPlugin))
         .run()

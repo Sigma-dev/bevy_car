@@ -1,13 +1,18 @@
 use avian3d::prelude::*;
 use bevy::{light::light_consts::lux, prelude::*};
 use numpad_cameras::NumpadCamera;
+use replace_material::prelude::*;
 
 use crate::camera::CameraBundle;
 
 #[derive(Component)]
 struct Ground;
 
-pub fn spawn_world(commands: &mut Commands, asset_server: &AssetServer) {
+pub fn spawn_world(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    street_light_material: Handle<StandardMaterial>,
+) {
     commands.spawn((
         DirectionalLight {
             shadows_enabled: true,
@@ -35,5 +40,6 @@ pub fn spawn_world(commands: &mut Commands, asset_server: &AssetServer) {
         Ground,
         RigidBody::Static,
         ColliderConstructorHierarchy::new(ColliderConstructor::TrimeshFromMesh),
+        ReplaceMaterial::new("RaceLight", street_light_material),
     ));
 }

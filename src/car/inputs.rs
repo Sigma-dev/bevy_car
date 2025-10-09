@@ -33,10 +33,12 @@ fn emit_inputs(
 }
 
 fn receive_inputs(
+    mut commands: Commands,
     client: Res<SteamP2PClient>,
     current_game_state: Res<CurrentGameState>,
     mut remote_inputs: MessageReader<CarRemoteInputs>,
     mut car_controller_input: Query<(&RemotelyControlled, &mut CarControllerInput)>,
+    cars: Query<(Entity, Option<&RemotelyControlled>), With<CarController>>,
 ) {
     if !client.is_lobby_owner().unwrap_or(false) {
         return;
@@ -44,7 +46,13 @@ fn receive_inputs(
     if current_game_state.0 != GameState::Race {
         return;
     }
+    for (car, maybe_remotely_controlled) in cars.iter() {
+        if maybe_remotely_controlled.is_none() {
+            commands.entity(car).insert(CarControllerInput::new());
+        }
+    }
     for CarRemoteInputs(steam_id, inputs) in remote_inputs.read() {
+        println!("Received inputs from: {:?}", steam_id);
         for (car_identity, mut car_controller_input) in car_controller_input.iter_mut() {
             if car_identity.0 == *steam_id {
                 car_controller_input.update(*inputs);
